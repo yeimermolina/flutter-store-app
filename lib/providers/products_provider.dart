@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/product.dart';
+import './product.dart';
 
 class ProductsProvider with ChangeNotifier {
   List<Product> _products = [
@@ -37,12 +37,36 @@ class ProductsProvider with ChangeNotifier {
     ),
   ];
 
+  var _showFavoritesOnly = false;
+
   List<Product> get products {
+    // if (_showFavoritesOnly) {
+    //   return _products.where((element) => element.isFavorite).toList();
+    // }
     return [..._products];
   }
 
-  void addProduct(Product product) {
+  List<Product> get favoriteProducts {
+    return _products.where((element) => element.isFavorite).toList();
+  }
+
+  Product findById(String productId) {
+    return _products.firstWhere((element) => element.id == productId);
+  }
+
+   void addProduct(Product product) {
     // _products.add(product);
     notifyListeners();
   }
+
+ // This can affect the entire app state
+  // void showFavoritesOnly() {
+  //   _showFavoritesOnly = true;
+  //   notifyListeners();
+  // }
+
+  // void showAll() {
+  //   _showFavoritesOnly = false;
+  //   notifyListeners();
+  // }
 }
