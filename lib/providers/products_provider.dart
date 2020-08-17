@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import './product.dart';
 
 class ProductsProvider with ChangeNotifier {
@@ -54,15 +56,38 @@ class ProductsProvider with ChangeNotifier {
     return _products.firstWhere((element) => element.id == productId);
   }
 
-   void addProduct(Product product) {
-     final newProduct = Product(title: product.title, description: product.description, price: product.price, imageUrl: product.imageUrl, id: DateTime.now().toString());
-    _products.insert(0, newProduct);
-    notifyListeners();
+  Future<void> addProduct(Product product) {
+    const url = 'https://flutter-shop-app-26fd6.firebaseio.com/products.json';
+
+    return http
+        .post(
+      url,
+      body: json.encode({
+        'title': product.title,
+        'description': product.description,
+        'imageUrl': product.imageUrl,
+        'price': product.price,
+        'isFavorite': product.isFavorite
+      }),
+    )
+        .then((response) {
+      final newProduct = Product(
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        id: json.decode(response.body)['name'],
+      );
+      _products.insert(0, newProduct);
+      notifyListeners();
+    }).catchError((error) {
+      throw error;
+    });
   }
 
   void updateProduct(String id, Product product) {
     final prodIndex = _products.indexWhere((element) => element.id == id);
-    if(prodIndex >= 0) {
+    if (prodIndex >= 0) {
       _products[prodIndex] = product;
       notifyListeners();
     }
@@ -73,7 +98,7 @@ class ProductsProvider with ChangeNotifier {
     notifyListeners();
   }
 
- // This can affect the entire app state
+  // This can affect the entire app state
   // void showFavoritesOnly() {
   //   _showFavoritesOnly = true;
   //   notifyListeners();
